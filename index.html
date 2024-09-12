@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Todo full stack app</title>
+    <script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+  </head>
+  <body>
+    <div>
+      Signup
+      <input id = "usernameSignup" type = "text" placeholder = "Enter the username">
+      <input id = "signupPassword" type = "text" placeholder = "Enter the password">
+      <button onclick = "signup()">
+        Submit
+      </button>
+    </div>
+
+    <div>
+      SignIn
+      <input id = "usernameSignin" type = "text" placeholder = "Enter the username">
+      <input id = "signinPassword" type = "text" placeholder = "Enter the Password">
+      <button onclick = "signin()">
+        Submit
+      </button>
+    </div>
+
+    <div>
+      <button onclick = "showtodos()">
+        Show my Todos
+      </button>
+    </div>
+
+    <div>
+      <button onclick = "addTodo()">Add Todos</button>
+      <input id = "TodoToBeAdded" type = "text" placeholder = "Enter the todo">
+    </div>
+
+    <div>
+      <button onclick = "deleteTodo()">Delete The todo</button>
+      <input id = "TodoToBeDeleted" type = "text" placeholder = "Enter the Todo Id">
+    </div>
+
+    <div id = "allTodosDiv"></div>
+
+    <div id = "updatedDiv"></div>
+    <script>
+      async function signup() {
+        const username = document.getElementById("usernameSignup").value;
+        const password = document.getElementById("signupPassword").value;
+
+        const response = await axios.post("http://localhost:3000/signup", {
+          username: username,
+          password: password
+        })
+        alert("user signed Up successfully");
+      }
+      async function signin(){
+        const username = document.getElementById("usernameSignin").value;
+        const password = document.getElementById("signinPassword").value;
+
+        const response = await axios.post("http://localhost:3000/signin", {
+          username: username,
+          password: password
+        })
+        localStorage.setItem("token", response.data.token);
+        alert("user signed in successfully");
+      }
+      async function showtodos(){
+        document.getElementById("allTodosDiv").innerHTML = "";
+        document.getElementById("updatedDiv").innerHTML = "";
+        const token = localStorage.getItem("token")
+        const response = await axios.get("http://localhost:3000/me/todos", {
+          headers: {
+            token: token
+          }
+        })
+        for(let i = 0; i < response.data.todos.length; i++){
+          const newHeadingId = document.createElement("h4");
+          const newHeadingDesc = document.createElement("h4");
+          const newHeadingStatus = document.createElement("h4");
+          newHeadingId.innerHTML = `Id Of The Todo : ${response.data.todos[i].id}`;
+          newHeadingDesc.innerHTML = `Todo : ${response.data.todos[i].description}`;
+          newHeadingStatus.innerHTML = `Status : ${response.data.todos[i].status} <br>`;
+          document.getElementById("allTodosDiv").appendChild(newHeadingId);
+          document.getElementById("allTodosDiv").appendChild(newHeadingDesc);
+          document.getElementById("allTodosDiv").appendChild(newHeadingStatus);
+        }
+        const newHeading = document.createElement("h2")
+        newHeading.textContent = "Update The above given todos"
+        const idOfTodos = document.createElement("input")
+        idOfTodos.setAttribute("type", "text")
+        idOfTodos.setAttribute("placeholder", "Enter The Id of the todo to be updated")
+        idOfTodos.setAttribute("id", "idOfTodoToBeUpdated");
+        const descOfTodo = document.createElement("input")
+        descOfTodo.setAttribute("type", "text")
+        descOfTodo.setAttribute("placeholder", "Enter the description of the updated todo")
+        descOfTodo.setAttribute("id", "toBeUpdatedTodoData")
+        const statusOfTodo = document.createElement("input")
+        statusOfTodo.setAttribute("type", "text")
+        statusOfTodo.setAttribute("placeholder", "Enter the status of the todo")
+        statusOfTodo.setAttribute("id", "toBeUpdatedStatus");
+        const newButton = document.createElement("button")
+        newButton.textContent = "Update Todo"
+        newButton.setAttribute("onclick", "updateTheTodo()");
+        document.getElementById("updatedDiv").appendChild(newHeading);
+        document.getElementById("updatedDiv").appendChild(idOfTodos);
+        document.getElementById("updatedDiv").appendChild(descOfTodo);
+        document.getElementById("updatedDiv").appendChild(statusOfTodo);
+        document.getElementById("updatedDiv").appendChild(newButton);
+      }
+      async function updateTheTodo(){
+        const updateTodoId = document.getElementById("idOfTodoToBeUpdated").value;
+        const updatedDesc = document.getElementById("toBeUpdatedTodoData").value;
+        const updatedStatus = document.getElementById("toBeUpdatedStatus").value;
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`http://localhost:3000/me/todos/${updateTodoId}`, 
+          {
+            description: updatedDesc,
+            status: updatedStatus
+          },
+          {
+            headers: {
+            token: token
+          }
+        })
+       
+        showtodos();
+      }
+
+      async function addTodo() {
+        const AddTodoData = document.getElementById("TodoToBeAdded").value;
+        const token = localStorage.getItem("token");
+        const response = await axios.post("http://localhost:3000/me/todos",
+          {
+            description: AddTodoData
+          },
+          {
+            headers: {
+              token: token
+            }
+          }
+        )
+        
+        showtodos();
+      }
+
+      async function deleteTodo(){
+        const TodoToBeDeletedId = document.getElementById("TodoToBeDeleted").value;
+        const token = localStorage.getItem("token");
+        const response = await axios.delete(`http://localhost:3000/me/todos/${TodoToBeDeletedId}`,{
+          headers: {
+            token: token
+          }
+        })
+        
+        showtodos();
+      }
+    </script>
+  </body>
+</html>
