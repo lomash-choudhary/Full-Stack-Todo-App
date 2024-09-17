@@ -47,7 +47,7 @@
         const username = document.getElementById("usernameSignup").value;
         const password = document.getElementById("signupPassword").value;
 
-        const response = await axios.post("http://localhost:3000/signup", {
+        const response = await axios.post("https://full-stack-todo-app-nu.vercel.app/signup", {
           username: username,
           password: password
         })
